@@ -1,5 +1,4 @@
 * A Freestanding Rust Binary
-** Introduction
 We cannot use most of the Rust standard library, because we need to create
 an executable that can be run without an underlying operating system. 
 
@@ -34,3 +33,41 @@ at there is an underlying operating system such as Linux or Windows that use$
 s the C runtime by default, which causes the linker errors. So, to avoid the$
 linker errors, we can compile for a different environment with no underlying$
 operating system.
+
+* Mininal Rust Kernel
+** The Boot Process
+When you turn on a computer, it begins executing firmware code that is stor$
+ed in motherboard ROM. This code performs a power-on self-test, detects ava$
+ilable RAM, and pre-initializes the CPU and hardware. Afterwards, it looks $
+for a bootable disk and starts booting the operating system kernel.
+
+On x86, there are two firmware standards: the basic Input/Output System and$
+the newer Unified Extensible Firmware Interface. Currently, we only provide$
+BIOS support, but support for UEFI is planned, too. 
+
+*** BIOS() Boot
+Wide compatibility is at the same time the biggest disadvantage of BIOS boo$
+ting, because it means that the CPU is put into a 16-bit compatibility mode$
+called real mode before booting so that archaic bootloaders from the 1980s $
+would still work.
+
+The bootloader has to determine the location of the kernel image on the dis$
+k and load it into memory. It also needs to switch the CPU from the 16-bit $
+real mode first to the 32-bit protected mode, and then to the 64-bit long m$
+ode, where 64-bit registers and the complete main memory are available. Its$
+third job is to query certain information (such as a memory map) from the B$
+IOS and pass it to the OS kernel.
+
+To avoid that every operating system implements its own bootloader, which i$
+s only compatible with a single OS, the Free Software Foundation created an$
+open bootloader standard called Multiboot in 1995. 
+
+** A Mininal Kernel
+*** Target Specification
+*** Building our Kernel
+The bootimage tool performs the following steps behind the scenes:
+- It compiles our kernel to an ELF file.
+- It compiles the bootloader dependency as a standalone executable.
+- It links the bytes of the kernel ELF file to the bootloader.
+
+*** Printing to Screen
