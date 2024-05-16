@@ -1,0 +1,36 @@
+* A Freestanding Rust Binary
+** Introduction
+We cannot use most of the Rust standard library, because we need to create
+an executable that can be run without an underlying operating system. 
+
+** Disabling the Standard Library
+To disable links to the std library, it's necessary to add the no_std att$
+ribute and provide pan
+
+Macro is part of the std library.
+
+** Panic Implementation
+** The eh_personality Language Item
+The eh_personality language item marks a function that is used for implement$
+ing stack unwinding. By default, Rust uses unwinding to run the destructors $
+of all live stack variables in case of a panic. This ensures that all used m$
+emory is freed and allows the parent thread to catch the panic and continue $
+execution. 
+
+Rust provides an option to abort on panic instead. This disables the generat$
+ion of unwinding symbol information and thus considerably reduces binary size.
+
+** The start attribute
+Most languages have a runtime system, which needs to be called before main, $
+since it needs to initialize itself.
+
+Rust only has a very minimal runtime, which takes care of some small things $
+such as setting up stack overflow guards or printing a backtrace on panic. T$
+he runtime then finally calls the main function.
+
+** Linker Errors
+By compiling for our host triple, the Rust compiler and the linker assume th$
+at there is an underlying operating system such as Linux or Windows that use$
+s the C runtime by default, which causes the linker errors. So, to avoid the$
+linker errors, we can compile for a different environment with no underlying$
+operating system.
