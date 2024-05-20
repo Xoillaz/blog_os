@@ -3,6 +3,8 @@
 
 use core::panic::PanicInfo;
 
+mod vga_buffer;
+
 static HELLO: &[u8] = b"Hello World!";
 
 // Don't mangle the function.
@@ -10,18 +12,8 @@ static HELLO: &[u8] = b"Hello World!";
 // This function is the entry point, since the link$
 // er looks for a function named `_start` by default
 pub extern "C" fn _start() -> ! {
-    // Cast the integer into a raw pointer.
-    let vga_buffer = 0xb8000 as *mut u8;
-
-    for (i, &byte) in HELLO.iter().enumerate() {
-        // Use offset() to write the string byte and color byte.
-        //
-        // Tell the compiler that the operations are valid.
-        unsafe {
-            *vga_buffer.offset(i as isize * 2) = byte;
-            *vga_buffer.offset(i as isize * 2 + 1) = 0xb;
-        }
-    }
+    println!("Hello World{}", "!");
+    panic!("Some panic message");
 
     loop {}
 }
@@ -35,6 +27,7 @@ pub extern "C" fn _start() -> ! {
 // as a diverging function by returning the “neve"
 // type.
 #[panic_handler]
-fn panic(_info: &PanicInfo) -> ! {
+fn panic(info: &PanicInfo) -> ! {
+    println!("{}", info);
     loop {}
 }

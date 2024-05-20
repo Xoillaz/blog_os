@@ -71,3 +71,27 @@ The bootimage tool performs the following steps behind the scenes:
 - It links the bytes of the kernel ELF file to the bootloader.
 
 *** Printing to Screen
+* VGA Text Mode
+** The VGA Text Buffer
+** A Rust Module
+*** Colors
+*** Text Buffer
+*** Printing
+*** Volatile
+The problem is that we only write to the Buffer and never read from it agai$
+n. The compiler doesn’t know that we really access VGA buffer memory (inst$
+ead of normal RAM) and knows nothing about the side effect that some charac$
+ters appear on the screen. So it might decide that these writes are unneces$
+sary and can be omitted. To avoid this erroneous optimization, we need to s$
+pecify these writes as volatile. This tells the compiler that the write has$
+side effects and should not be optimized away.
+
+*** Formatting Macros
+*** Newlines
+** A Global Interface
+*** Lazy Statics
+*** Spinlocks
+*** Safety
+*** A println Macro
+*** Hello World using println
+*** Printing Panic Messages
