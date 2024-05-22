@@ -72,11 +72,7 @@ The bootimage tool performs the following steps behind the scenes:
 
 *** Printing to Screen
 * VGA Text Mode
-** The VGA Text Buffer
 ** A Rust Module
-*** Colors
-*** Text Buffer
-*** Printing
 *** Volatile
 The problem is that we only write to the Buffer and never read from it agai$
 n. The compiler doesn’t know that we really access VGA buffer memory (inst$
@@ -86,12 +82,47 @@ sary and can be omitted. To avoid this erroneous optimization, we need to s$
 pecify these writes as volatile. This tells the compiler that the write has$
 side effects and should not be optimized away.
 
-*** Formatting Macros
-*** Newlines
-** A Global Interface
-*** Lazy Statics
-*** Spinlocks
-*** Safety
-*** A println Macro
-*** Hello World using println
-*** Printing Panic Messages
+* Testing
+** Testing in Rust
+*** Custom Test Frameworks
+Rust supports replacing the default test framework through the unstable cust$
+om_test_frameworks feature. This feature requires no external libraries and $
+thus also works in #[no_std] environments. It works by collecting all functi$
+ons annotated with a #[test_case] attribute and then invoking a user-specifi$
+ed runner function with the list of tests as an argument. Thus, it gives the$
+implementation maximal control over the test process.
+
+** Exiting QEMU
+*** I/O Ports
+*** Using the Exit Device
+*** Success Exit Code
+** Printing to the Console
+*** Serial Port
+*** QEMU Arguments
+*** Print an Error Message on Panic
+*** Hiding QEMU
+*** Timeouts
+Since endless loops can occur in so many situations, the bootimage tool sets$
+a timeout of 5 minutes for each test executable by default. If the test does$
+not finish within this time, it is marked as failed and a “Timed Out” err $
+is printed to the console. This feature ensures that tests that are stuck in$
+an endless loop don’t block cargo test foreer.
+
+*** Insert Printing Automatically
+** Testing the VGA Buffer
+** Integration Tests
+Ideally, we want to implement these functions exactly as we did in our main.$
+rs using the serial_println macro and the exit_qemu function. The problem is$
+that we don’t have access to these functions since tests are built complety$
+separately from our main.rs executable.
+
+*** Create a Library
+*** Completing the Intergration Test
+*** Future Tests
+As you can imagine, many more tests are possible. By adding such tests, we c$
+an ensure that we don’t break them accidentally when we add new features t $
+our kernel or refactor our code. This is especially important when our kerne$
+becomes larger and more complex.
+
+*** Tests that Should Panic
+*** No Harness Tests

@@ -1,33 +1,32 @@
 #![no_std] // Don't link the Rust standard library.
 #![no_main] // Disable all Rust-level entry points.
+#![feature(custom_test_frameworks)]
+#![test_runner(blog_os::test_runner)]
+#![reexport_test_harness_main = "test_main"] // Use conditional compilation to add the call to test_main only in test contexts.
 
+use blog_os::println;
 use core::panic::PanicInfo;
 
-mod vga_buffer;
-
-static HELLO: &[u8] = b"Hello World!";
-
-// Don't mangle the function.
 #[no_mangle]
-// This function is the entry point, since the link$
-// er looks for a function named `_start` by default
 pub extern "C" fn _start() -> ! {
     println!("Hello World{}", "!");
-    panic!("Some panic message");
+
+    #[cfg(test)]
+    test_main();
 
     loop {}
 }
 
-/// This function is called on panic.
-// The PanicInfo parameter contains the file and lin
-// e where the panic happened and the optional panic
-// message.
-//
-// The function should never return, so it is marked
-// as a diverging function by returning the “neve"
-// type.
+#[cfg(not(test))]
 #[panic_handler]
 fn panic(info: &PanicInfo) -> ! {
     println!("{}", info);
     loop {}
+}
+
+// Panic handler in test mode.
+#[cfg(test)]
+#[panic_handler]
+fn panic(info: &PanicInfo) -> ! {
+    blog_os::test_panic_handler(info)
 }
