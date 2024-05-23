@@ -92,15 +92,7 @@ ons annotated with a #[test_case] attribute and then invoking a user-specifi$
 ed runner function with the list of tests as an argument. Thus, it gives the$
 implementation maximal control over the test process.
 
-** Exiting QEMU
-*** I/O Ports
-*** Using the Exit Device
-*** Success Exit Code
 ** Printing to the Console
-*** Serial Port
-*** QEMU Arguments
-*** Print an Error Message on Panic
-*** Hiding QEMU
 *** Timeouts
 Since endless loops can occur in so many situations, the bootimage tool sets$
 a timeout of 5 minutes for each test executable by default. If the test does$
@@ -109,20 +101,41 @@ is printed to the console. This feature ensures that tests that are stuck in$
 an endless loop don’t block cargo test foreer.
 
 *** Insert Printing Automatically
-** Testing the VGA Buffer
 ** Integration Tests
 Ideally, we want to implement these functions exactly as we did in our main.$
 rs using the serial_println macro and the exit_qemu function. The problem is$
 that we don’t have access to these functions since tests are built complety$
 separately from our main.rs executable.
 
-*** Create a Library
-*** Completing the Intergration Test
 *** Future Tests
 As you can imagine, many more tests are possible. By adding such tests, we c$
 an ensure that we don’t break them accidentally when we add new features t $
 our kernel or refactor our code. This is especially important when our kerne$
 becomes larger and more complex.
 
-*** Tests that Should Panic
-*** No Harness Tests
+* CPU Exceptions
+** The Interrupt Calling Convention
+*** Preserving all Registers
+Since we don’t know when an exception occurs, we can’t backup any regiers $
+before. This means we can’t use a calling convention that relies on calle s$
+aved registers for exception handlers. Instead, we need a calling convention$
+that preserves all registers. The x86-interrupt calling convention is such a$
+calling convention, so it guarantees that all register values are restored t$
+o their original values on function return.
+
+*** Behind the Scenes
+The x86-interrupt calling convention is a powerful abstraction that hides al$
+most all of the messy details of the exception handling process. However, so$
+metimes it’s useful to know what’s happening behind the curtain. Here ia s$
+ort overview of the things that the x86-interrupt calling convention takes c$
+are of:
+- Retrieving the arguments
+- Returning using iretq
+- Handling the error Code
+- Aligning the stack
+
+** Implementation
+*** Loading the IDT
+*** Running it
+*** Adding a Test
+** Too Much Magic?
