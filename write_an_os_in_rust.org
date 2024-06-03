@@ -1,141 +1,63 @@
 * A Freestanding Rust Binary
-We cannot use most of the Rust standard library, because we need to create
-an executable that can be run without an underlying operating system. 
-
-** Disabling the Standard Library
-To disable links to the std library, it's necessary to add the no_std att$
-ribute and provide pan
-
-Macro is part of the std library.
-
-** Panic Implementation
-** The eh_personality Language Item
-The eh_personality language item marks a function that is used for implement$
-ing stack unwinding. By default, Rust uses unwinding to run the destructors $
-of all live stack variables in case of a panic. This ensures that all used m$
-emory is freed and allows the parent thread to catch the panic and continue $
-execution. 
-
-Rust provides an option to abort on panic instead. This disables the generat$
-ion of unwinding symbol information and thus considerably reduces binary size.
+We cannot use most of the Rust standard library, because we need to create an executable that can be run without an underlying operating system. 
 
 ** The start attribute
-Most languages have a runtime system, which needs to be called before main, $
-since it needs to initialize itself.
+Most languages have a runtime system, which needs to be called before main, since it needs to initialize itself.
 
-Rust only has a very minimal runtime, which takes care of some small things $
-such as setting up stack overflow guards or printing a backtrace on panic. T$
-he runtime then finally calls the main function.
+Rust only has a very minimal runtime, which takes care of some small things such as setting up stack overflow guards or printing a backtrace on panic. The runtime then finally calls the main function.
 
 ** Linker Errors
-By compiling for our host triple, the Rust compiler and the linker assume th$
-at there is an underlying operating system such as Linux or Windows that use$
-s the C runtime by default, which causes the linker errors. So, to avoid the$
-linker errors, we can compile for a different environment with no underlying$
-operating system.
+By compiling for our host triple, the Rust compiler and the linker assume that there is an underlying operating system such as Linux or Windows that uses the C runtime by default, which causes the linker errors. So, to avoid the linker errors, we can compile for a different environment with no underlying operating system.
 
 * Mininal Rust Kernel
 ** The Boot Process
-When you turn on a computer, it begins executing firmware code that is stor$
-ed in motherboard ROM. This code performs a power-on self-test, detects ava$
-ilable RAM, and pre-initializes the CPU and hardware. Afterwards, it looks $
-for a bootable disk and starts booting the operating system kernel.
+When you turn on a computer, it begins executing firmware code that is stored in motherboard ROM. This code performs a power-on self-test, detects available RAM, and pre-initializes the CPU and hardware. Afterwards, it looks for a bootable disk and starts booting the operating system kernel. 
 
-On x86, there are two firmware standards: the basic Input/Output System and$
-the newer Unified Extensible Firmware Interface. Currently, we only provide$
-BIOS support, but support for UEFI is planned, too. 
+On x86, there are two firmware standards: the basic Input/Output System and the newer Unified Extensible Firmware Interface. Currently, we only provide BIOS support, but support for UEFI is planned, too. 
 
 *** BIOS() Boot
-Wide compatibility is at the same time the biggest disadvantage of BIOS boo$
-ting, because it means that the CPU is put into a 16-bit compatibility mode$
-called real mode before booting so that archaic bootloaders from the 1980s $
-would still work.
+Wide compatibility is at the same time the biggest disadvantage of BIOS booting, because it means that the CPU is put into a 16-bit compatibility mode called real mode before booting so that archaic bootloaders from the 1980s would still work.
 
-The bootloader has to determine the location of the kernel image on the dis$
-k and load it into memory. It also needs to switch the CPU from the 16-bit $
-real mode first to the 32-bit protected mode, and then to the 64-bit long m$
-ode, where 64-bit registers and the complete main memory are available. Its$
-third job is to query certain information (such as a memory map) from the B$
-IOS and pass it to the OS kernel.
+The bootloader has to determine the location of the kernel image on the disk and load it into memory. It also needs to switch the CPU from the 16-bit real mode first to the 32-bit protected mode, and then to the 64-bit long mode, where 64-bit registers and the complete main memory are available. It's third job is to query certain information (such as a memory map) from the BIOS and pass it to the OS kernel.
 
-To avoid that every operating system implements its own bootloader, which i$
-s only compatible with a single OS, the Free Software Foundation created an$
-open bootloader standard called Multiboot in 1995. 
+To avoid that every operating system implements its own bootloader, which is only compatible with a single OS, the Free Software Foundation created an open bootloader standard called Multiboot in 1995. 
 
-** A Mininal Kernel
-*** Target Specification
-*** Building our Kernel
-The bootimage tool performs the following steps behind the scenes:
-- It compiles our kernel to an ELF file.
-- It compiles the bootloader dependency as a standalone executable.
-- It links the bytes of the kernel ELF file to the bootloader.
-
-*** Printing to Screen
 * VGA Text Mode
-** A Rust Module
-*** Volatile
-The problem is that we only write to the Buffer and never read from it agai$
-n. The compiler doesn’t know that we really access VGA buffer memory (inst$
-ead of normal RAM) and knows nothing about the side effect that some charac$
-ters appear on the screen. So it might decide that these writes are unneces$
-sary and can be omitted. To avoid this erroneous optimization, we need to s$
-pecify these writes as volatile. This tells the compiler that the write has$
-side effects and should not be optimized away.
+** A Rust Module - Volatile
+The problem is that we only write to the Buffer and never read from it again. The compiler doesn’t know that we really access VGA buffer memory (insead of normal RAM) and knows nothing about the side effect that some characters appear on the screen. So it might decide that these writes are unnecessary and can be omitted. To avoid this erroneous optimization, we need to specify these writes as volatile. This tells the compiler that the write hasside effects and should not be optimized away.
 
 * Testing
-** Testing in Rust
-*** Custom Test Frameworks
-Rust supports replacing the default test framework through the unstable cust$
-om_test_frameworks feature. This feature requires no external libraries and $
-thus also works in #[no_std] environments. It works by collecting all functi$
-ons annotated with a #[test_case] attribute and then invoking a user-specifi$
-ed runner function with the list of tests as an argument. Thus, it gives the$
-implementation maximal control over the test process.
+** Testing in Rust - Custom Test Frameworks
+Rust supports replacing the default test framework through the unstable custom_test_frameworks feature. This feature requires no external libraries and thus also works in #[no_std] environments. It works by collecting all functions annotated with a #[test_case] attribute and then invoking a user-specified runner function with the list of tests as an argument. Thus, it gives the implementation maximal control over the test process.
 
-** Printing to the Console
-*** Timeouts
-Since endless loops can occur in so many situations, the bootimage tool sets$
-a timeout of 5 minutes for each test executable by default. If the test does$
-not finish within this time, it is marked as failed and a “Timed Out” err $
-is printed to the console. This feature ensures that tests that are stuck in$
-an endless loop don’t block cargo test foreer.
+** Printing to the Console - Timeouts
+Since endless loops can occur in so many situations, the bootimage tool sets a timeout of 5 minutes for each test executable by default. If the test does not finish within this time, it is marked as failed and a “Timed Out” eris printed to the console. This feature ensures that tests that are stuck in an endless loop don’t block cargo test foreer.
 
-*** Insert Printing Automatically
-** Integration Tests
-Ideally, we want to implement these functions exactly as we did in our main.$
-rs using the serial_println macro and the exit_qemu function. The problem is$
-that we don’t have access to these functions since tests are built complety$
-separately from our main.rs executable.
-
-*** Future Tests
-As you can imagine, many more tests are possible. By adding such tests, we c$
-an ensure that we don’t break them accidentally when we add new features t $
-our kernel or refactor our code. This is especially important when our kerne$
-becomes larger and more complex.
+** Intergration Tests - Future Tests
+As you can imagine, many more tests are possible. By adding such tests, we can ensure that we don’t break them accidentally when we add new feature to our kernel or refactor our code. This is especially important when our kerne becomes larger and more complex.
 
 * CPU Exceptions
-** The Interrupt Calling Convention
-*** Preserving all Registers
-Since we don’t know when an exception occurs, we can’t backup any regiers $
-before. This means we can’t use a calling convention that relies on calle s$
-aved registers for exception handlers. Instead, we need a calling convention$
-that preserves all registers. The x86-interrupt calling convention is such a$
-calling convention, so it guarantees that all register values are restored t$
-o their original values on function return.
+** The Interrupt Calling Convention - Preserving all Registers
+Since we don't know when an exception occurs, we can't backup any registers before. This means we can't use a calling convention that relies on caller saved registers for exception handlers. Instead, we need a calling convention that preserves all registers. The x86-interrupt calling convention is such a calling convention, so it guarantees that all register values are restored to their original values on function return.
 
-*** Behind the Scenes
-The x86-interrupt calling convention is a powerful abstraction that hides al$
-most all of the messy details of the exception handling process. However, so$
-metimes it’s useful to know what’s happening behind the curtain. Here ia s$
-ort overview of the things that the x86-interrupt calling convention takes c$
-are of:
-- Retrieving the arguments
-- Returning using iretq
-- Handling the error Code
-- Aligning the stack
+* Double Fault
+** What is a Double Fault?
+A double fault behaves like a normal exception. It has the vector number 8 and we can define a normal handler function for it in the IDT. It is really important to provide a double fault handler, because if a double fault is unhandled, a fatal triple fault occurs. Triple faults can't be caught, and most hardware reacts with a system reset.
 
-** Implementation
-*** Loading the IDT
-*** Running it
-*** Adding a Test
-** Too Much Magic?
+** Causes of Double Faults
+*** Kernel Stack Overflow
+A guard page is a special memory page at the bottom of a stack that makes it possible to detect stack overflows. The page is not mapper to any physical frame, so accessing it causes a page fault instead of sliently corrupting other memory. The bootloader sets up a guard page for our kernel stack, so a stack overflow causes a page fault.
+
+When a page fault occurs, the CPU looks up the page fault handler in the IDT and tries to push the interrupt stack frame onto the stack. However, the current stack pointer still points to the non-present guard page. Thus, a second page fault occurs, which causes a double fault (according to the above table).
+
+So the CPU tries to call the double fault handler now. However, on a double fault, the CPU tries to push the exception stack frame, too. The stack pointer still points to the guard page, so a third page fault occurs, which causes a triple fault and a system reboot. So our current double fault handler can't avoid a triple fault in this case.
+
+** Switching Stacks
+*** The Global Descriptor Table
+We need a way to tell the CPU that it should use TSS. Unfortunately, this is a bit cumbersome since the TSS uses the segmentation system. Instead of loading the table directly, we need to add a new segment descriptor to the Global Descriptor Table. Then we can load our TSS by invoking the ltr instruction with the respective GDT index. 
+
+*** The Final Steps
+** A Stack Overflow Test
+*** Implementing _start
+*** The Test IDT
+*** The Double Fault Handler
