@@ -19,6 +19,8 @@ volatile = "0.2.6"
 spin = "0.5.2" # To get synchronized interior mutability.
 x86_64 = "0.14.2" # Use the exist abstractions of in and out.
 uart_16550 = "0.2.0"
+pic8259 = "0.10.1"
+pc-keyboard = "0.7.0"
 
 [dependencies.lazy_static]
 version = "1.0"

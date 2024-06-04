@@ -13,20 +13,20 @@ pub extern "C" fn _start() -> ! {
 
     blog_os::init();
 
-    x86_64::instructions::interrupts::int3();
+    // x86_64::instructions::interrupts::int3();
 
     #[cfg(test)]
     test_main();
 
     println!("It did not crash!");
-    loop {}
+    blog_os::hlt_loop();
 }
 
 #[cfg(not(test))]
 #[panic_handler]
 fn panic(info: &PanicInfo) -> ! {
     println!("{}", info);
-    loop {}
+    blog_os::hlt_loop();
 }
 
 // Panic handler in test mode.

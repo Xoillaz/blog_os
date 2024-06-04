@@ -56,8 +56,22 @@ So the CPU tries to call the double fault handler now. However, on a double faul
 *** The Global Descriptor Table
 We need a way to tell the CPU that it should use TSS. Unfortunately, this is a bit cumbersome since the TSS uses the segmentation system. Instead of loading the table directly, we need to add a new segment descriptor to the Global Descriptor Table. Then we can load our TSS by invoking the ltr instruction with the respective GDT index. 
 
-*** The Final Steps
-** A Stack Overflow Test
-*** Implementing _start
-*** The Test IDT
-*** The Double Fault Handler
+* Hardware Interrupt
+Unlike exceptions, hardware interrupts occur asynchronously. This means they are completely independent from the executed code and can occur at any time. Thus, we suddenly have a form of concurrency in our kernel with all the potential concurrency-related bugs.
+
+** The 8259 PIC
+
+
+** Enabling Interrupts
+** Handling Timer Interrupts
+*** End of Interrupt
+*** Configuring the Timer
+** Deadlocks
+*** Provoking a Deadlock
+*** Fixing the Deadlock
+** Fixing a Race Condition
+** The hit Instruction
+** Keyboard Input
+*** Reading the Scancodes
+*** Interpreting the Scancodes
+*** Configuring the Keyboard
